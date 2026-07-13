@@ -6,7 +6,9 @@ categories: network
 tags: [network, ipv6]
 ---
 
-![インターネット](/_images/202607/2026-07-13-1.png)
+<img src="/images/ipv6-network.png"
+     alt="IPv4とIPv6のデュアルスタック"
+     style="max-width:600px; width:100%; height:auto;">
 
 意識しないで使っていた自分の家のルーターですが、ふとした折に「IPv6で接続したい」と思い、その場合IPv4の接続はどうなるのだろうと調べてみたところ、意外と複雑な仕組みになっていました。理解した内容をまとめておきます。
 
