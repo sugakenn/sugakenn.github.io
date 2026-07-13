@@ -127,7 +127,7 @@ ISP装置を通過すると通常のIPv4通信になります。
 | クロスパス        | MAP-E   |
 
 参考
-https://business.ntt-east.co.jp/column/service/flets-hikari/what-is-map-e.html
+[MAP-EとDS-Liteはどう違う？IPv4 over IPv6の実装技術を比較して解説](https://business.ntt-east.co.jp/column/service/flets-hikari/what-is-map-e.html)
 
 ---
 
