@@ -6,7 +6,7 @@ categories: network
 tags: [network, ipv6]
 ---
 
-<img src="/images/ipv6-network.png"
+<img src="/_images/202607/2026-07-13-1.png"
      alt="IPv4とIPv6のデュアルスタック"
      style="max-width:600px; width:100%; height:auto;">
 
