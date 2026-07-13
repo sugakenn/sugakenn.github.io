@@ -2,7 +2,8 @@
 layout: post
 title: "IPv4とIPv6のデュアルスタックについて"
 date: 2026-07-13
-categories: network ipv6
+categories: network
+tags: network ipv6
 ---
 
 意識しないで使っていた自分の家のルーターですが、ふとした折に「IPv6で接続したい」と思い、その場合IPv4の接続はどうなるのだろうと調べてみたところ、意外と複雑な仕組みになっていました。理解した内容をまとめておきます。
