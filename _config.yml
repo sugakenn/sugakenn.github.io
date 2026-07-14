@@ -31,4 +31,5 @@ plugins:
 paginate: 8
 paginate_path: "/page/:num"
 
+# サイトの生成から除外するもの
 exclude: ["node_modules", "gulpfile.js", "package.json", "yarn.lock"]
