@@ -1,0 +1,286 @@
+
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>IPv4とIPv6のデュアルスタックについて | なんぶ電子°</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="IPv4とIPv6のデュアルスタックについて" />
+<meta name="author" content="なんぶ電子" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="近年ではAIに頼めばちょっとしたコードや設定をしてくれる便利な世の中になりましたが、そのようにして得られたものをファクトチェックしながらここにメモを残したいと思います。" />
+<meta property="og:description" content="近年ではAIに頼めばちょっとしたコードや設定をしてくれる便利な世の中になりましたが、そのようにして得られたものをファクトチェックしながらここにメモを残したいと思います。" />
+<link rel="canonical" href="https://sugakenn.github.io/network/ipv4-ipv6-dual-stack/" />
+<meta property="og:url" content="https://sugakenn.github.io/network/ipv4-ipv6-dual-stack/" />
+<meta property="og:site_name" content="なんぶ電子°" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-07-13T00:00:00+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="IPv4とIPv6のデュアルスタックについて" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"なんぶ電子"},"dateModified":"2026-07-13T00:00:00+00:00","datePublished":"2026-07-13T00:00:00+00:00","description":"近年ではAIに頼めばちょっとしたコードや設定をしてくれる便利な世の中になりましたが、そのようにして得られたものをファクトチェックしながらここにメモを残したいと思います。","headline":"IPv4とIPv6のデュアルスタックについて","mainEntityOfPage":{"@type":"WebPage","@id":"https://sugakenn.github.io/network/ipv4-ipv6-dual-stack/"},"url":"https://sugakenn.github.io/network/ipv4-ipv6-dual-stack/"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=e3582fbb9ecb36dd766416e180367e9af5a020f7">
+    <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <![endif]-->
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1><a href="https://sugakenn.github.io/">なんぶ電子°</a></h1>
+
+        
+
+        <p>近年ではAIに頼めばちょっとしたコードや設定をしてくれる便利な世の中になりましたが、そのようにして得られたものをファクトチェックしながらここにメモを残したいと思います。</p>
+
+        
+
+        
+        <p class="view"><a href="https://github.com/sugakenn">View My GitHub Profile</a></p>
+        
+
+        
+      </header>
+      <section>
+
+      <small>13 July 2026</small>
+<h1>IPv4とIPv6のデュアルスタックについて</h1>
+
+<p class="view">by なんぶ電子</p>
+
+<p><img src="https://github.com/sugakenn/sugakenn.github.io/blob/main/_images/202607/2026-07-13-1.png?raw=true" alt="IPv4とIPv6のデュアルスタック" style="max-width:800px; width:100%; height:auto;" /></p>
+
+<p>意識しないで使っていた自分の家のルーターですが、ふとした折に「IPv6で接続したい」と思い、その場合IPv4の接続はどうなるのだろうと調べてみたところ、意外と複雑な仕組みになっていました。理解した内容をまとめておきます。</p>
+
+<h2 id="pppoeとipoe">PPPoEとIPoE</h2>
+
+<p>IPv4時代は、ほとんどの家庭用ルーターは <strong>PPPoE</strong> でインターネットへ接続していました。</p>
+
+<p>PPPoE は <strong>Point-to-Point Protocol over Ethernet</strong> の略で、通信方式（プロトコル）のことです。</p>
+
+<p>PPP（接続や認証などを行うプロトコル）をEthernet上で利用する方式です。</p>
+
+<hr />
+
+<h2 id="ipv4-over-ipv6">IPv4 over IPv6</h2>
+
+<p>IPv6環境でインターネットへ接続している場合、IPv4通信をどのように共存させるかにはいくつか方式があります。</p>
+
+<p>これはプロバイダーによって採用方式が異なり、代表的なものに次の2つがあります。</p>
+
+<ul>
+  <li>MAP-E</li>
+  <li>DS-Lite</li>
+</ul>
+
+<p>どちらも <strong>IPv4パケットをIPv6ネットワーク上で運ぶ技術</strong> ですが、IPv4通信を処理する場所が異なります。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>方式</th>
+      <th>IPv4のNATを行う場所</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>MAP-E</td>
+      <td>家庭側ルーター</td>
+    </tr>
+    <tr>
+      <td>DS-Lite</td>
+      <td>ISP側（AFTR）</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h1 id="map-e">MAP-E</h1>
+
+<p>MAP-Eでは、IPv4のNATを家庭側ルーターが行います。そのためMAP-E対応ルーターが必要です（現在販売されている家庭用ルーターの多くは対応しています）。</p>
+
+<p>IPv4パケット送信時の流れは次のようになります。</p>
+
+<ol>
+  <li>PCがIPv4通信を行うと判断する（IPv6通信ならそのままIPoEで送信）。</li>
+  <li>PCはIPv4パケットを送信する。</li>
+  <li>ルーターが送信元IPv4アドレス・ポートを共有グローバルIPv4アドレスと割り当てられたポートへ変換（NAPT）。</li>
+  <li>そのIPv4パケットをIPv6でカプセル化してISPへ送信する。</li>
+</ol>
+
+<p>このとき外側のIPv6ヘッダーの送信元アドレスはルーター自身のIPv6アドレスになります。</p>
+
+<p>ルーターへ戻ってきたIPv6パケットは、</p>
+
+<ul>
+  <li>Next Header が IPv4</li>
+  <li>宛先IPv6がルーター</li>
+</ul>
+
+<p>であることからMAP-Eパケットと判断されます。</p>
+
+<p>ルーターはIPv6ヘッダーを取り外し、NATテーブルを参照して元のPCのIPv4アドレス・ポートへ戻してLANへ転送します。</p>
+
+<h3 id="ポート番号">ポート番号</h3>
+
+<p>MAP-Eでは共有グローバルIPv4アドレスを複数利用者で共有します。</p>
+
+<p>利用者はポート番号の範囲（PSID）によって区別されるため、ルーターはISPから割り当てられた範囲内のポートだけを利用してNAPTを行います。</p>
+
+<h3 id="isp側の処理">ISP側の処理</h3>
+
+<p>ISP側では、</p>
+
+<ol>
+  <li>IPv6ヘッダーを取り外す。</li>
+  <li>IPv4パケットをそのままインターネットへ転送する。</li>
+  <li>戻りパケットでは宛先IPv4アドレスとポート番号から利用者を特定する。</li>
+  <li>再びIPv6でカプセル化して家庭側ルーターへ返送する。</li>
+</ol>
+
+<hr />
+
+<h1 id="ds-lite">DS-Lite</h1>
+
+<p>DS-Liteでは「ルーター側でNATをしない」と言われますが、これは<strong>グローバルIPv4へのNATを行わない</strong>という意味です。</p>
+
+<p>家庭内で複数端末を収容するためのIPv4 NAT（NAT44）は従来どおりルーターで行われます。</p>
+
+<p>通常のIPv4 NATでは送信元アドレスはグローバルIPv4アドレスへ変換されますが、DS-Liteでは家庭側ルーターはグローバルIPv4アドレスを持たないため、</p>
+
+<ul>
+  <li>PCのIPv4アドレス</li>
+  <li>ルーターのIPv4アドレス</li>
+</ul>
+
+<p>への変換だけが行われます。</p>
+
+<p>そのIPv4パケットをIPv6でカプセル化し、ISPの <strong>AFTR（Address Family Transition Router）</strong> へ送信します。</p>
+
+<p>AFTRでは</p>
+
+<ol>
+  <li>IPv6ヘッダーを取り外す。</li>
+  <li>CGNAT（Carrier-Grade NAT）を実行する。</li>
+  <li>グローバルIPv4アドレスへ変換してインターネットへ送信する。</li>
+</ol>
+
+<p>戻りパケットはCGNATテーブルを参照して対応する利用者を特定し、再度IPv6でカプセル化して家庭側へ返送します。</p>
+
+<hr />
+
+<h2 id="ipv6カプセル化はどこで行われるのか">IPv6カプセル化はどこで行われるのか</h2>
+
+<p>MAP-EもDS-Liteも、IPv6によるカプセル化は</p>
+
+<p><strong>家庭側ルーター ⇔ ISP側装置</strong></p>
+
+<p>の区間だけで行われます。</p>
+
+<p>ISP装置を通過すると通常のIPv4通信になります。</p>
+
+<hr />
+
+<h2 id="主なサービス">主なサービス</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>サービス</th>
+      <th>方式</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>v6プラス</td>
+      <td>MAP-E</td>
+    </tr>
+    <tr>
+      <td>OCNバーチャルコネクト</td>
+      <td>MAP-E</td>
+    </tr>
+    <tr>
+      <td>transix</td>
+      <td>DS-Lite</td>
+    </tr>
+    <tr>
+      <td>クロスパス</td>
+      <td>MAP-E</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>参考
+<a href="https://business.ntt-east.co.jp/column/service/flets-hikari/what-is-map-e.html">MAP-EとDS-Liteはどう違う？IPv4 over IPv6の実装技術を比較して解説</a></p>
+
+<hr />
+
+<h1 id="ipoeだと困ること">IPoEだと困ること</h1>
+
+<p>IPoEで困るケースの一つは、防犯カメラなど自宅ネットワーク内の機器をIPv4で公開したい場合です。</p>
+
+<p>IPv6で公開するだけなら、各機器にグローバルIPv6アドレスが割り当てられるため比較的容易です。</p>
+
+<p>しかし、現在でもIPv6で接続できない環境があるため、IPv4で公開したいケースがあります。</p>
+
+<p>IPoEではIPv4グローバルアドレスは複数利用者で共有されます。</p>
+
+<h3 id="map-e-1">MAP-E</h3>
+
+<p>MAP-Eではポート番号で利用者を識別します。</p>
+
+<p>そのため、ISPから割り当てられたポート範囲内であれば外部から到達できます。</p>
+
+<p>一方で、</p>
+
+<ul>
+  <li>80（HTTP）</li>
+  <li>443（HTTPS）</li>
+  <li>500（IKE）</li>
+  <li>4500（NAT-T）</li>
+  <li>ESP（IPプロトコル50）</li>
+</ul>
+
+<p>など、利用したいポートがISPから割り当てられていない場合は、そのポートを利用した公開はできません。</p>
+
+<h3 id="ds-lite-1">DS-Lite</h3>
+
+<p>DS-LiteではISP側のCGNATが通信状態（NATテーブル）を管理しています。</p>
+
+<p>そのため、外部から新規にIPv4接続を開始しても、CGNATに対応する通信状態が存在しない限り家庭側へ転送されません。</p>
+
+<p>このため、一般的にはIPv4でのサーバー公開やポート開放はできません。</p>
+
+
+
+  <small>tags: <em>network</em> - <em>ipv6</em></small>
+
+
+
+      </section>
+      <footer>
+        
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="/assets/js/scale.fix.js"></script>
+  </body>
+</html>
