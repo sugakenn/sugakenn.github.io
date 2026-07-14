@@ -1,11 +1,5 @@
 ---
 layout: post
-date: 2026-07-13
-categories: network
-tags: [network, ipv6]
----
----
-layout: post
 title: "IPv4とIPv6のデュアルスタックについて"
 date: 2026-07-13 22:00:00 +0900
 description: 今まで何気なくIPoEを使っていたのですが、ふとIPv4接続はどういう仕組みか気になったので調べてみました。
