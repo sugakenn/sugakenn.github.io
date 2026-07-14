@@ -1,6 +1,6 @@
 title: なんぶ電子°
 description: 近年ではAIに頼めばちょっとしたコードや設定をしてくれる便利な世の中になりましたが、そのようにして得られたものをファクトチェックしながらここにメモを残したいと思います。
-permalink: '/:categories/:title/'
+permalink: '/:categories/:title.html'
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 site-twitter: #if your site has a twitter account, enter it here
