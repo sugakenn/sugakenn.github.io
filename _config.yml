@@ -1,7 +1,34 @@
-theme: jekyll-theme-minimal
 title: なんぶ電子°
 description: 近年ではAIに頼めばちょっとしたコードや設定をしてくれる便利な世の中になりましたが、そのようにして得られたものをファクトチェックしながらここにメモを残したいと思います。
-author: なんぶ電子
-permalink: /:categories/:title/
+permalink: '/:categories/:title/'
+baseurl: "" # the subpath of your site, e.g. /blog
+url: "" # the base hostname & protocol for your site, e.g. http://example.com
+site-twitter: #if your site has a twitter account, enter it here
+
+# Author Settings
+author: sugakenn # add your name
+author-img: sugakenn.jpg # add your photo
+about-author: 20年以上社内SEをやっています。次から次へと湧いてくる周辺情報を忘れないように書き留めています。 # add description
+social-twitter: # add your Twitter handle
+social-facebook: # add your Facebook handle
+social-github: sugakenn # add your Github handle
+social-linkedin: # add your Linkedin handle
+social-email: # add your Email address
+
+# Disqus
+#discus-identifier: mr-brown # add your discus identifier
+
+# Tracker
+analytics: # Google Analytics
+
+# Build Settings
+markdown: kramdown
 plugins:
   - jekyll-sitemap
+  - jekyll-paginate
+  - jemoji
+
+paginate: 8
+paginate_path: "/page/:num"
+
+exclude: ["node_modules", "gulpfile.js", "package.json", "yarn.lock"]
