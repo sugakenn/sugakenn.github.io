@@ -1,15 +1,21 @@
 ---
 layout: post
-title: "IPv4とIPv6のデュアルスタックについて"
 date: 2026-07-13
 categories: network
 tags: [network, ipv6]
 ---
+---
+layout: post
+title: "IPv4とIPv6のデュアルスタックについて"
+date: 2026-07-13 22:00:00 +0900
+description: 今まで何気なくIPoEを使っていたのですが、ふとIPv4接続はどういう仕組みか気になったので調べてみました。
+img: 2026/2026-07-13-1.jpg # Add image post (optional)
+fig-caption: # Add figcaption (optional)
+tags: [network, IPv6]
+---
 
-<img src="/images/202607/2026-07-13-1.png"
-     alt="IPv4とIPv6のデュアルスタック"
-     style="max-width:800px; width:100%; height:auto;">
-     
+![IPv4とIPv6のデュアルスタック]({{site.baseurl}}/assets/img/2026/2026-07-13-1.jpg)
+
 
 意識しないで使っていた自分の家のルーターですが、ふとした折に「IPv6で接続したい」と思い、その場合IPv4の接続はどうなるのだろうと調べてみたところ、意外と複雑な仕組みになっていました。理解した内容をまとめておきます。
 
