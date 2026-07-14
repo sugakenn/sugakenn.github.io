@@ -8,8 +8,9 @@ fig-caption: # Add figcaption (optional)
 tags: [network, IPv6]
 ---
 
+<!--
 ![IPv4とIPv6のデュアルスタック]({{site.baseurl}}/assets/img/2026/2026-07-13-1.png)
-
+-->
 
 意識しないで使っていた自分の家のルーターですが、ふとした折に「IPv6で接続したい」と思い、その場合IPv4の接続はどうなるのだろうと調べてみたところ、意外と複雑な仕組みになっていました。理解した内容をまとめておきます。
 
