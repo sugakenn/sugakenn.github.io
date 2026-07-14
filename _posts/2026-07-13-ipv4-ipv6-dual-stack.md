@@ -6,7 +6,7 @@ categories: network
 tags: [network, ipv6]
 ---
 
-<img src="https://github.com/sugakenn/sugakenn.github.io/blob/main/_images/202607/2026-07-13-1.png?raw=true"
+<img src="/images/202607/2026-07-13-1.png"
      alt="IPv4とIPv6のデュアルスタック"
      style="max-width:800px; width:100%; height:auto;">
      
