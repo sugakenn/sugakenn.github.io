@@ -8,7 +8,9 @@ site-twitter: #if your site has a twitter account, enter it here
 # Author Settings
 author: sugakenn # add your name
 author-img: sugakenn.jpg # add your photo
-about-author: 20年以上社内SEをやっています。次から次へと湧いてくる周辺情報を忘れないように書き留めています。<br>PC周辺はAIが解決してくれることが多い世の中になりましたが、そうしながら試した記録もファクトチェックがわりに残します。 # add description
+about-author: | 
+  20年以上社内SEをやっています。次から次へと湧いてくる周辺情報を忘れないように書き留めています。
+  PC周辺はAIが解決してくれることが多い世の中になりましたが、そうしながら試した記録もファクトチェックがわりに残します。
 social-twitter: # add your Twitter handle
 social-facebook: # add your Facebook handle
 social-github: sugakenn # add your Github handle
