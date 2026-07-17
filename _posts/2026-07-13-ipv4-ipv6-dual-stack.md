@@ -6,6 +6,8 @@ description: 今まで何気なくIPoEを使っていたのですが、ふとIPv
 img: 2026/2026-07-13-1.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)
 tags: [network, IPv6]
+categories: 
+  - network
 ---
 
 <!--
