@@ -1,4 +1,14 @@
-![タイトル画像]()
+---
+layout: post
+title: ".isoを書き込んだUSBメモリのクリーンアップ"
+date: 2026-07-17 22:00:00 +0900
+description: .isoを書き込んだUSBメモリのクリーンアップ方法です。通常のフォーマットではサイズが元に戻りません。
+img: 2026/2026-07-17-1.webp # Add image post (optional)
+fig-caption: # Add figcaption (optional)
+tags: [pc_tips]
+categories: 
+  - pc_tips
+---
 
 ウインドウズのインストーラーをUSBで作ったり、[balena Etcher](https://www.balena.io/etcher/)等、.isoイメージをUSBメモリに展開すると、USBディスク内のパーテーションができてしまい、フォーマットをしても本来の容量分使えなくなってしまうことがあります。
 
