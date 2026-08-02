@@ -236,3 +236,41 @@ table netdev global_blacklist {
 外側のパケットの宛先により INPUT または FORWARD に入り、その後トンネル解除処理があった場合は、新たなパケットとして再度ルーティングテーブルに渡される。その結果に応じて INPUT または FORWARD のフィルターが適用される。
 
 
+## サンプル設定
+```
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+table ip filter {
+        chain input {
+                type filter hook input priority filter;policy drop;
+                ip protocol icmp accept
+                iifname "lo" accept
+                ct state established, related accept
+                # IPv4だけsshを許可
+                tcp dport 22 ct state new accept
+        }
+        chain forward {
+                type filter hook forward priority filter;policy drop;
+        }
+        chain output {
+                type filter hook output priority filter;policy accept;
+        }
+}
+
+table ip6 filter {
+        chain input {
+                type filter hook input priority filter;policy drop;
+                meta l4proto ipv6-icmp accept
+                iifname "lo" accept
+                ct state established, related accept
+        }
+        chain forward {
+                type filter hook forward priority filter;policy drop;
+        }
+        chain output {
+                type filter hook output priority filter;policy accept;
+        }
+}
+```
