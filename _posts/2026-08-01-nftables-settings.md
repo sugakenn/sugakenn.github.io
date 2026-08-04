@@ -2,6 +2,7 @@
 layout: post
 title: "nftableの初期設定"
 date: 2026-08-01 17:00:00 +0900
+last_modified_at: 2026-08-04
 description: nftablesの初期設定に関して注意点をまとめています
 img: 2026/2026-08-01-1.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)
