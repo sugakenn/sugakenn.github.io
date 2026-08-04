@@ -235,10 +235,112 @@ table netdev global_blacklist {
     }
 }
 ```
+### counter と log
+
+#### counter
+ouptputやinputフィルターにdropを設定する前に、既存正常通信を阻害する可能性を調べるのに counter や logを使うと便利です。
+
+通信が存在するかしないか不明なルールをacceptで追加しておき、counter や logを取ります。
+
+counter は対象となったパケット数とバイト数を計測するもので、マッチ条件(式)の後にcounterキーワードを付与るだけです。counter自体はacceptやdropと同じステートメントに属しますが、acceptやdropは出てきた段階で処理を終えるものなので、それらより後ろに書くと文法エラーになります。
+
+```
+マッチ条件1... ステートメント1...
+```
+```
+tcp dport 22 counter
+```
+
+条件を書かずに、`counter`だけで書くこともできるので、ルールに一致しなかったパケットをカウントしたい場合はルールの最後におきます。
+
+カウンターを設定したフィルターは、`nft list rulset`の出力に該当したパケットとバイトが表示されるようになります。
+
+カウンターは通常PCの再起動や設定の読み込み直しでリセットされます。カウンターを維持したいなら、電源をOFFにする前に`nft list ruleset`の値で、`nftables.conf`を上書きすることで現在の値を書きこみます。そうすると起動時はその値からのカウントとなります。
+
+複数のルールでカウンターを共用したいような場合は、対象のテーブル内に名前付きカウンターを作成しcounterキーワードの後にそれを指定します。
+
+```
+table ip filter {
+  counter test-c {
+        packets 0 bytes 0
+  }
+  chain input {
+        type filter hook input priority filter; policy drop;
+        ip protocol icmp counter name "test-c" accept
+  }
+...
+}
+```
+コマンドで名前付きカウンターを作成するなら
+```
+nft add counter [ファミリー] [テーブル名] [カウンター名]
+```
+となります。
+
+また、名前付きカウンタを設定すると、設定の読み込み直しや再起動をすることなくカウンターのリセットをすることができます。
+
+```
+# 全体 
+nft reset counters 
+
+# テーブル指定
+nft reset counters table inet(ファミリ) filter(テーブル名)
+
+# テーブル指定(counterのあとにs がないことと table キーワードないことに注意)
+nft reset counter inet(ファミリ) filter(テーブル名) counter(カウンタ名)
+```
+全体をやテーブル指定しても、名前がついていないカウンターはリセットされません。これはnftablesの仕様のようです。
+
+nftの設定を再読み込みしたり、機器の再起動でもリセットされますので、名前なしのカウンタの維持と同様に保持したいなら`nftables.conf`に書き出します。
+
+単に存在の有無を調べたい時は、シャットダウン時に`nft list ruleset`の値をログ的に出力しておき後でまとめて見直すという方法もあると思います。
+
+リダイレクトでそのまま`/etc/nftables.conf`を上書きしてしまうと、コメントやシェバン、冒頭のflush文などは消えてしまう事に注意してください。
+
+#### log
+
+log はjournaldなどにログを送る指定です。prefix でログの先頭に記述する内容、levelでログレベルを指定できます。
+
+指定できるレベルは次の通りです。
+
+-alert(1)
+-crit(2)
+-err(3)
+-warning(4)
+-notice(5)
+-info(6)
+-debug(7)
+
+```
+tcp dport 22 counter log prefix "SSH OUT: " level err accept 
+```
+
 
 ### トンネル時の挙動
-これは iptables時代から変わりはありませんが、トンネル処理をしているサーバーの場合は、カプセル化された外側のデータはinputフィルターに入り、カプセル化を解除したデータは解除後の宛先に応じて、inputまたはforwardに入ります。
+
+これは iptables時代から変わりはありませんが、トンネル間通信においては通過するチェーンに注意する必要があります。
+
+たとえばIPSecのトンネルモードが次のようになっているとします。
+
+```
+端末1→IPSecServer1→IPSecトンネル→IPSecServer2→端末2
+```
+
+この時、IPSecServer1に入る時はForward、IPSecServer2に入る時はInput、Forwardとなります。
+
+Server1に入る時はまだカプセル化しておらず、forwardの後にカプセル化されます。
+
+カプセル化されたデータの宛先はServer2になっているので、Server2ではInputチェーンに入ります(カプセル化解除前の送信元はServer1です)。
+
+カプセル化が解除されると、本来の宛先が見えるので、それが自身だったらカプセル化が解除されたinputチェーン、そうでなければforwardチェーンにのります。
+
+
+
+IPSec
+
+IPSecサーバーとなっている場合は、トンネル処理をしているサーバーの場合は、カプセル化された外側のデータはinputフィルターに入り、カプセル化を解除したデータは解除後の宛先に応じて、inputまたはforwardに入ります。
 外側のパケットの宛先により INPUT または FORWARD に入り、その後トンネル解除処理があった場合は、新たなパケットとして再度ルーティングテーブルに渡されます。その際に宛先が自分なら input 他なら forward のフィルターが適用されます。
+
 
 
 ## サンプル設定
