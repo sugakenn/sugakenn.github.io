@@ -11,11 +11,10 @@ categories:
   - debian
 ---
 
-WireGuard
 
 VPNを作成するアプリには[OpenVPN](https://openvpn.net/)や[StrongSwan](https://strongswan.org/)などがありますが、設定が複雑になりがちです。
 
-(WireGuard)[https://www.wireguard.com/]はその点が考慮されたアプリです。今回はその導入の検討のために使い方を勉強しました。
+[WireGuard](https://www.wireguard.com/)はその点が考慮されたアプリです。今回はその導入の検討のために使い方を勉強しました。
 
 
 ## 構成
