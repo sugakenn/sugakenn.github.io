@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "hostapdで不要になったノートPCをWi-Fi APに"
+title: "WireGuardを使ってみる"
 date: 2026-08-08 17:00:00 +0900
 last_modified_at: 2026-08-08
 description: OpenVpnやStrongSwanを使ってきた筆者がWireGuardの導入のためにその基本を学びました
