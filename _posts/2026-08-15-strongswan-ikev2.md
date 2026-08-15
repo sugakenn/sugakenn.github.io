@@ -212,7 +212,7 @@ table inet filter {
 
         chain forward {
                 type filter hook forward priority filter; policy drop;
-                ip saddr 172.16.0.0/16 ip daddr 172.16.0.0/16 accept
+                # 転送するネットワークに合わせて設定
         }
 
         chain output {
@@ -324,3 +324,49 @@ plugin 'agent': failed to load - agent_plugin_create returned NULL
 [strongSwanのgitレポジトリ](https://github.com/strongswan/strongswan/discussions/2971)にも掲載されていて、DebianAPTパッケージのunstable 6.0.5では解消されているそうです。
 
 capabilityが不足しているということなので、権限を付けてしまえばいいとも思いましたが、全体としてどのように作用するかわからない部分もあるので更新されるまで待とうと思います。
+
+
+## ルーティング
+
+strongSwanではlocal_tsとremote_tsを適切に設定する事で、それをIPSecに通すか否かだけでなく、ルーティングまで含めて設定してくれます。
+
+多くの場合はそれで問題はないのですが、自分でルーティングを書きたい場合があります。
+
+そのような時は、CHILD SAの設定中に XFRM interface IDを設定して、トンネルインターフェースを作ることでルーティングすることができます。
+
+```
+connections {
+  ...
+  ikev2cert {
+     ...
+     children {
+        # 任意名
+        net-remote-vpn {
+          ...
+          # XFRM interface ID
+          if_id_in  = 1234
+          if_id_out = 1234
+```
+
+XFRMはtransformの略でどこ宛のパケットをIPsecでカプセル化するかを`XFRM policy`として保持しています。
+それらの設定は、次のコマンドで確認することができます。
+```
+ip xfrm state
+src [送信元アドレス] dst [宛先アドレス]
+...
+```
+そのxfrmのIDを指定して、トンネルインターフェースを作ります。`XFRMインターフェースID`には先の設定ファイルに追記したIDを記述します。
+
+```
+# ip link add [トンネル名] type xfrm dev [実際のIF] if_id [XFRMインターフェースID]
+# ip link add xfrm-tunnel type xfrm dev ens32 if_id 1234
+# ip link set xfrm-tunnel up
+```
+こうすることで、ルーティングにトンネル名が利用できるようになるので、任意のルーティングをすることが可能です。
+ただし、前述の通りIPSecトンネルを通るかどうかは`XFRM policy`によって決められるので、ルーティングを設定するだけではIPSecトンネルを通すことができません。
+
+`XFRM policy`を手動で変更するか、strongSwanのremote_ts、local_tsに記述します。
+
+設定中に、XFRM interface IDを設定すると、strongSwanはルーティングには関与しなくなるので、自身で設定する必要があります。
+
+ちなみに、XFRM policyに応じてstrongSwanが自動で行うルーティングのことを「ポリシーベースルーティング」というそうです。
