@@ -16,6 +16,9 @@ VPNを作成するアプリには[OpenVPN](https://openvpn.net/)や[StrongSwan](
 
 [WireGuard](https://www.wireguard.com/)はその点が考慮されたアプリです。今回はその導入の検討のために使い方を勉強しました。
 
+**目次**
+* TOC
+{:toc}
 
 ## 構成
 今回は中央サーバー型(スター型)接続にします。
