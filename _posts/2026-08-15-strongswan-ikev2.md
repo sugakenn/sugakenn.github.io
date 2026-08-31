@@ -25,7 +25,7 @@ L2TP/IPSecではは下流に`pppd`や`xl2tpd`が必要になったり、1701番�
 
 ## strongSwanのインストール
 
-strongSwanは単一というより、複数のデーモン・コマンド・プラグインから構成されるIPsec/IKEソフトウェア群と言った方が近いと思います。
+strongSwanは単一のアプリというより、複数(デーモン・コマンド・プラグイン)から構成されるIPsec/IKEアプリ群と言った方が近いと思います。
 
 過去バージョンの互換性維持等もあり、初見だとわかりにくい構成になっています。
 
@@ -49,24 +49,29 @@ strongSwanは単一というより、複数のデーモン・コマンド・プ�
 なので、新旧どちらが使われているかは、`strongswan-starter`サービスがいるか、`strongswan`サービス(中身はcharn-systemd)がいるかで判断できます。
 
 
-Debian13で`strongswan`をAPT経由でインストールすると、`libstrongswan-standard-plugins`だけ入って、`libstrongswan-extra-plugins`が入らないようなのでそれを指定してインストールします。
+また、Debian13で`strongswan`をAPT経由でインストールすると、`libstrongswan-standard-plugins`だけ入って、証明書認証で使う、`libstrongswan-extra-plugins`が入らないようなのでインストールします。
 
-## サーバーの設定
+```
+apt install strongswan libstrongswan-standard-plugins libstrongswan-extra-plugins
+```
 
-### プラグインのロード
-charonに対する、各種プラグインの設定ファイルは、`/etc/strongswan.d/charon/`に入っています。今回は特にさわる必要はなさそうですが、たとえばagent.confは次のようになっていて、charon起動時にロードされるようになっています。
+## プラグインの設定
+
+ライブラリをインストールした時にデフォルトで読み込まれる設定になっていますので、プラグインの設定は特にさわる必要はなさそうです。
+
+charonに対する、各種プラグインの設定ファイルは、`/etc/strongswan.d/charon/`に入っています。、たとえばagent.confは次のようになっていて、charon起動時にロードされるようになっています。
+
 ```
 # agent.conf
 agent {
     load = yes
-
 }
 ```
 現在どのようなプラグインが読み込まれているかは、状態一覧を出力する`swanctl --stat`コマンドから確認できます。
 
 ### 接続設定
 
-接続設定は`/etc/swanctl/conf.d/`に入れます。`swanctl`は`charon`起動時に`swanctl --load-all`コマンドを実行しますが、それが実行されるのこのディレクトリ内のすべての`.conf`ファイルが設定ファイルとしてロードされます。
+接続設定は`/etc/swanctl/conf.d/`に入れます。`swanctl`は`charon`起動時に`swanctl --load-all`コマンドを実行しますが、それが実行されると、このディレクトリ内のすべての`.conf`ファイルがロードされます。
 
 ここでは`ikev2-cert.conf`と名付けました
 
@@ -179,7 +184,9 @@ secrets {
 
 ### ファイアウォールの設定
 
-ファイアウォールを動かしている場合は、NAT越しの時はudpの500(IPSec)と、4500(NAT-T)を許可します。
+ファイアウォールを動かしている場合は、対象のポートの通信を許可する必要がありますが、NAT越しにつなぐ場合と直接つなぐ場合で必要な設定は少し変わります。
+
+NAT越しの時はudpの500(IPSec)と、udpの4500(NAT-T)を許可します。
 
 直接接続の場合は、IPプロトコルの50番(ESP)とudpの500を通します。
 
@@ -205,7 +212,7 @@ table inet filter {
                 
                 # IPv6 直接接続 
                 # udp dport 500 ct state new accept
-                # ESP指定が拡張ヘッダにいる可能性があるのでnexthdr指定ではない
+                # ESP指定が拡張ヘッダにいる可能性があるのでnexthdr指定で指定しない方がいいです
                 # meta l4proto esp accept
                 
         }
@@ -223,18 +230,22 @@ table inet filter {
 
 ### 証明書の用意と配置
 
-証明書はつぎのような構成で作成します。VPN用のCAがstrongSwanサーバーと、Windowsクライアント用の証明書を発行します。
+証明書は下図のような構成で作成します。
 
-strongSwanは基本的に自身の証明書を発行したCAが発行した証明書をもつクライアントに対して接続を許可します。
 
-鍵漏洩時対策などで、特定の証明書だけ利用不可にしたい場合は、失効リスト(CRL)を運用します。
 
 CA  
 ├── サーバー(strongSwan)  
 └── クライアント(Windows)  
 
+ひとつのCAで、strongSwanサーバーと、Windowsクライアント用の証明書を発行します。
+
+strongSwanは自身の証明書をを発行したCAの証明書をもつクライアントに対して接続を許可します。
+
+鍵漏洩時対策などで、特定の証明書だけ利用不可にしたい場合は、失効リスト(CRL)を運用します。
+
 それぞれ秘密鍵と証明書が必要です。クライアント用の証明書と秘密鍵は共用も可能ですが、端末毎に分けるのが理想です。
-そうしておかないとひとつの秘密鍵が漏れた際に全台を証明書を入れ替える必要がでてきます。
+そうしておかないとひとつの秘密鍵が漏れた際に、全端末の証明書を入れ替える必要がでてきます。
 
 証明書と秘密鍵は`opnessl`で作ることができますが、これらの説明は長くなりますので別記事の[OpenSSLでプライベートCAを運用する](https://sugakenn.github.io/debian/make-cert.html)を参考にしてください。
 
