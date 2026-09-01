@@ -13,6 +13,9 @@ categories:
 
 ブラウザでアプリケーションを作成していて、ローカルでSQLiteを動かしたいと思い、調べてみたら公式の[SQLite Wasm](https://github.com/sqlite/sqlite-wasm)を使うと実現できそうなので、使ってみることにしました。
 
+以降で書かれている使い方を少し拡張した[サンプル的なプログラム](https://github.com/sugakenn/blog_box/tree/main/sqlite3-wasm)の方もよければ参考にしてください。
+
+
 ## ブラウザの特殊なファイル保存領域
 
 基本的にはブラウザはセキュリティを担保する目的から、ローカルの端末資源にはアクセスできないようになっています。
