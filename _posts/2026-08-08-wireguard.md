@@ -265,6 +265,7 @@ wg set [インターフェース(wg0 等)] peer [対象の公開鍵(wg showで�
 
 Pingで接続を維持するためのPowersShellのスクリプトは次のような感じになると思います。Debianならrootのcronにいれればよく簡単なのですが、Windowsでは管理者権限でのタスクの実行は若干複雑です。
 
+ここではc:\ProgramDataにファイルを配置する前提ですが、こうしておけばユーザー権限でps1ファイルを編集されることはなくなると思います。
 ```
 # WireGuard用の定時更新用 .ps1ファイル
 # 次のようにしてWindowsタスクへ登録
@@ -286,7 +287,7 @@ Pingで接続を維持するためのPowersShellのスクリプトは次のよ�
 
 # 設定 -------------------------------------------------
 $wg = "C:\Program Files\WireGuard\wg.exe"
-$pubkey = "子側のPUBLIC_KEY"
+$pubkey = "中央サーバーのPUBLIC_KEY"
 $net = "wg0(トンネル名)"
 $endpoint = "endpoint.jp:51820(中央サーバー)"
 $logFile = "C:\ProgramData\WGBeacon\wg-beacon.log(ログファイル)"
@@ -314,3 +315,88 @@ Add-Content -Path $logFile -Value $pingResult
 端末が増えてくると管理が少し面倒なので、簡易的なWebUIを用意してみました。お好きにカスタマイズしてください。
 
 こちらの構成例は数種のファイルに及ぶので、[レポジトリ](https://github.com/sugakenn/blog_box/tree/main/wg)で、説明・公開しています。
+
+## WindowsのWireGuard端末をルーター化
+
+子側のWindows端末をルーター化してネットワーク接続接続する方法は次のようになります。
+
+まず、中央側の設定に端末のホストアドレスに加えて、接続したいネットワークを,で区切って指定します。
+
+```
+#中央側
+[Interface]
+Address = 192.168.255.1/24
+PrivateKey = ...
+
+# 拠点A(端末のNIC側にある192.168.1.0/24へ接続)
+[Peer]
+PublicKey = ...
+AllowedIPs = 192.168.255.2/32, 192.168.1.0/24
+
+
+# 拠点B
+[Peer]
+PublicKey = ...
+AllowedIPs = 192.168.255.3/32, 192.168.2.0/24
+```
+
+```
+#子側（拠点A)
+[Interface]
+Address = 192.168.255.2/32
+PrivateKey = ...
+
+[Peer]
+PublicKey = ...
+# WireGurdネットワーク以外で、接続したいネットワークをすべて入れる
+AllowedIPs = 192.168.255.0/24, 192.168.2.0/24, 192.168.3.0/24
+```
+
+中央側も子側もAllowedIPsに設定されているネットワークはWireGuardの接続であるwg0へ流れるようになります。
+
+Debianで処理している場合は、`wg-quick donw wg0` として再びUPするなど、wg-quickで処理させないと、ルーティングまでは自動で反映されません。
+
+子側からくるパケットの宛先は、WireGuardのネットワーク外であってもかまいません。その際は中央サーバー側の通常のルーティングテーブルに流れていき、経路が正しくせっていしてあればそちらへ流れます。また、WireGuardネットワークの外からくるパケットも同様に中央サーバーの処理で内側に流されます。
+
+この機能を使うことで、たとえば拠点Aのネットワークである192.168.1.0/24からつながっている10.8.0.0/24への経路がダウンした時にWireGuardを使って別ルートを作れます。
+
+その際は、拠点AのWireGuardのAllowedIPsに10.8.0.0/24を加えて中央に転送するようにします。
+この時、拠点Aのデフォルトゲートウェイに10.8.0.0/24宛のパケットを拠点AのWireGuard端末に転送するようにルーティングするか、自身がデフォルトゲートウェイになります。
+
+中央サーバーには通常のルーティングテーブルに10.8.0.0/24宛のエントリーが入っていなければ設定します。
+
+同様に戻りのルートも設定します。10.8.0.0/24のネットワークのルーターにも、192.168.1.0/24ネットワークへのルーティングWireGuardの中央サーバー宛に送信するように設定します。
+
+念のため断っておきますが、拠点Bの経路ダウンの原因が直下のインターネット回線切断によるものだったら回避はできません。
+
+Debianでルーター機能を有効化する方法は前述しましたが、Windows機でルーター機能を有効にするには、次のようにします。
+
+Windows機の場合は、外側のNICと、WireGuardトンネルに対して、Forwardingを設定しないといけません。
+
+それらの指定をするための識別子と必要な設定の状態を確認します。
+
+```
+Get-NetIPInterface -AddressFamily IPv4 | Select-Object  InterfaceAlias, InterfaceIndex, InterfaceIndex, Forwarding, WeakHostSend, WeakHostRecieve
+
+```
+
+設定は、InterfaceAliasかInterfaceIndexを使って、Fowardingを指定します。
+
+```
+Set-NetIPInterface -InterfaceAlias "Ethernet"  -AddressFamily IPv4  -Forwarding Enabled 
+
+Set-NetIPInterface -InterfaceIndex 32  -AddressFamily IPv4  -Forwarding Enabled  
+```
+
+ForwardingはNIC間の転送を許可するフラグです。WeakHostSend/RecieveはインターフェースとIPの結びつきの強さの設定で、デフォルト(Disabled)の状態だと、たとえば、実在NICの送信元IPアドレスを使ってWireGuard側へデータを送ることができません。
+Fowardingを設定すればこれらの設定は不要だと思いますが、念のため覚えておくとよいと思います。
+
+また通常、WindowsはWireGuardをPublicネットワークとして認識します。Privateにしておいた方が問題が少ないと思いますのでその際は、次のコマンドを実行します。
+
+```
+Set-NetConnectionProfile -InterfaceAlias "wg0" -NetworkCategory Private
+```
+
+注意が必要なのは、WireGuardを再起動するとWireGuardトンネルの転送やネットワークカテゴリ設定はデフォルトに戻るということです。
+
+
