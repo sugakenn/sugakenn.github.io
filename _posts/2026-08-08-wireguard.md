@@ -407,14 +407,14 @@ Set-NetConnectionProfile -InterfaceAlias "wg0" -NetworkCategory Private
 
 WindowsのWireguardもLinux同様にトンネル毎でサービスとして管理されています。
 
-その際のサービスの名前は「WireGuard Tunnel$トンネル名」となっています。これは、トンネルを有効化されている時だけ存在するサービスです。
+その際のサービスの名前は「WireGuard Tunnel: トンネル名」(トンネル名の前に半角スペースがあります)となっています。これは、トンネルを有効化されている時だけ存在するサービスです。
 
-ちなみにサービスの管理画面で出てくる名前は、表示名(Display Name)で$の部分が :に差し変わります。
+ちなみにサービス名は実際の名前(: トンネル名が$トンネル名に差し変わる)と、表示名がありますが、イベントには表示名で渡るようです。
 
 「基本タスクの作成」のウィザードからは設定できないので、一旦他の部分を設定し終えた後編集するか、「タスクの作成」から設定します。
 
 トリガーで、[イベント時][カスタム][新しいイベントフィルター][XML]と進みます。
-[手動でクエリを指定する]にチェックをいれ、次のように記述します。
+[手動でクエリを編集する]にチェックをいれ、次のように記述します。
 
 ```
 <QueryList>
@@ -422,23 +422,26 @@ WindowsのWireguardもLinux同様にトンネル毎でサービスとして管�
     <Select Path="System">
       *[System[
         Provider[@Name='Service Control Manager']
-        and EventID=7036
+        and EventID=7045
       ]]
       and
       *[EventData[
-        Data[@Name='param1']='WireGuardTunnel$wg0'
-        and Data[@Name='param2']='running'
+        Data[@Name='ServiceName']='WireGuard Tunnel: wg0'
       ]]
     </Select>
   </Query>
 </QueryList>
 ```
-上記で、システムログのサービスコントロールマネージャーが生成するイベントID 7036(サービス状態の変化)の中から、名前が`Wireguard$wg0`、状態が`running`が発生したら起動という意味になります。
+上記で、システムログのサービスコントロールマネージャーが生成するイベントID 7045(サービスのインストール)の中から、名前が`Wireguard$wg0`、状態が`running`が発生したら起動という意味になります。
 
 SYSTEM権限で、ユーザーがログオンしているかどうかにかかわらず実行、最上位の特権で実行するまで付けます。
 
 これでトリガーはできたので、あとはpowershellのスクリプトを作ります。おおむねつぎのようになると思います。
 強い権限で動かしますので、スクリプトの編集権限はユーザーに付与しないようにします。
+
+現状Wireguardはトンネルを起動するたびにサービスをインストールし停止するとアンインストールする仕様のようですが、LinuxみたいにサービスのON/OFFを切り替えるだけに仕様変更されたら、イベントIDは 7036(サービス状態の変化)を指定することになると思います。
+その際は、`and Data[@Name='StartType']='xxx'`も条件に入れる必要があると思いますが、イベントビューアのWindowsログ、システム、詳細EventDataを確認します。
+
 
 ```
 $WgInterface  = "wg0"
@@ -475,11 +478,12 @@ Set-NetIPInterface `
     -Forwarding Enabled
 
 ```
+ちなみに、ps1ファイルをUTF-8で保存する時はBOMを付けないと文字化けが起きる可能性が高いです。
+エディタでBOMをつけられないなら、SJISでも動きますのでそちらで保存します。
 
 サービスのON(トンネルの有効化)の後で自動でwgの転送設定ができていれば成功です。
 
 ```
 # 設定確認
-Get-NetIPInterface -InterfaceAlias $WgInterface, $LanInterface -AddressFamily IPv4 |
-    Select-Object InterfaceAlias, InterfaceIndex, Forwarding
+Get-NetIPInterface -AddressFamily IPv4 | Select-Object InterfaceAlias, InterfaceIndex, Forwarding
 ```
