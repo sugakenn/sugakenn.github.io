@@ -399,4 +399,87 @@ Set-NetConnectionProfile -InterfaceAlias "wg0" -NetworkCategory Private
 
 注意が必要なのは、WireGuardを再起動するとWireGuardトンネルの転送やネットワークカテゴリ設定はデフォルトに戻るということです。
 
+## Windowsで転送の自動設定
 
+転送設定をWireguardのON、OFFのたびに手動で行うのは運用上少し難しいので、自動化できないかAIに聞いてみました。
+
+そうしたら、サービスのログを使ってイベントを起こす方法を教えてくれたので試してみました。
+
+WindowsのWireguardもLinux同様にトンネル毎でサービスとして管理されています。
+
+その際のサービスの名前は「WireGuard Tunnel$トンネル名」となっています。これは、トンネルを有効化されている時だけ存在するサービスです。
+
+ちなみにサービスの管理画面で出てくる名前は、表示名(Display Name)で$の部分が :に差し変わります。
+
+「基本タスクの作成」のウィザードからは設定できないので、一旦他の部分を設定し終えた後編集するか、「タスクの作成」から設定します。
+
+トリガーで、[イベント時][カスタム][新しいイベントフィルター][XML]と進みます。
+[手動でクエリを指定する]にチェックをいれ、次のように記述します。
+
+```
+<QueryList>
+  <Query Id="0" Path="System">
+    <Select Path="System">
+      *[System[
+        Provider[@Name='Service Control Manager']
+        and EventID=7036
+      ]]
+      and
+      *[EventData[
+        Data[@Name='param1']='WireGuardTunnel$wg0'
+        and Data[@Name='param2']='running'
+      ]]
+    </Select>
+  </Query>
+</QueryList>
+```
+上記で、システムログのサービスコントロールマネージャーが生成するイベントID 7036(サービス状態の変化)の中から、名前が`Wireguard$wg0`、状態が`running`が発生したら起動という意味になります。
+
+SYSTEM権限で、ユーザーがログオンしているかどうかにかかわらず実行、最上位の特権で実行するまで付けます。
+
+これでトリガーはできたので、あとはpowershellのスクリプトを作ります。おおむねつぎのようになると思います。
+強い権限で動かしますので、スクリプトの編集権限はユーザーに付与しないようにします。
+
+```
+$WgInterface  = "wg0"
+$LanInterface = "Ethernet"
+
+# wg0 が作成されるまで最大30秒待つ
+for ($i = 0; $i -lt 30; $i++) {
+
+    $wg = Get-NetIPInterface `
+        -InterfaceAlias $WgInterface `
+        -AddressFamily IPv4 `
+        -ErrorAction SilentlyContinue
+
+    if ($wg) {
+        break
+    }
+
+    Start-Sleep -Seconds 1
+}
+
+if (-not $wg) {
+    Write-Error "$WgInterface が見つかりません"
+    exit 1
+}
+
+Set-NetIPInterface `
+    -InterfaceAlias $WgInterface `
+    -AddressFamily IPv4 `
+    -Forwarding Enabled
+
+Set-NetIPInterface `
+    -InterfaceAlias $LanInterface `
+    -AddressFamily IPv4 `
+    -Forwarding Enabled
+
+```
+
+サービスのON(トンネルの有効化)の後で自動でwgの転送設定ができていれば成功です。
+
+```
+# 設定確認
+Get-NetIPInterface -InterfaceAlias $WgInterface, $LanInterface -AddressFamily IPv4 |
+    Select-Object InterfaceAlias, InterfaceIndex, Forwarding
+```
