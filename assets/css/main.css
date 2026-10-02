@@ -808,6 +808,7 @@ blockquote {
   color: #ada8a8;
 }
 
+/* オリジナル
 pre {
   padding: 1rem 2rem;
   overflow: auto;
@@ -825,6 +826,25 @@ pre code {
   word-wrap: break-word;
   word-break: break-all;
 }
+*/
+
+pre {
+  padding: 1rem 2rem;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre;
+  box-sizing: border-box;
+}
+
+pre code {
+  border: 0;
+  padding-right: 0;
+  padding-left: 0;
+  white-space: inherit;
+  word-wrap: normal;
+  word-break: normal;
+}
+
 
 table {
   border: 1px solid #aaa;
