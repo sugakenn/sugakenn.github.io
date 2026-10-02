@@ -808,7 +808,6 @@ blockquote {
   color: #ada8a8;
 }
 
-/* オリジナル
 pre {
   padding: 1rem 2rem;
   overflow: auto;
@@ -826,23 +825,11 @@ pre code {
   word-wrap: break-word;
   word-break: break-all;
 }
-*/
 
-pre {
-  padding: 1rem 2rem;
-  max-width: 100%;
-  overflow-x: auto;
-  white-space: pre;
-  box-sizing: border-box;
-}
-
-pre code {
-  border: 0;
-  padding-right: 0;
-  padding-left: 0;
-  white-space: inherit;
-  word-wrap: normal;
-  word-break: normal;
+pre, .highlight {
+  overflow-x: auto; /* 長いコードの横スクロール */
+  /* max-height: 400px; */ /* 縦の長さを制限する場合 */
+  /* overflow-y: auto; */ /* 縦スクロール */
 }
 
 
