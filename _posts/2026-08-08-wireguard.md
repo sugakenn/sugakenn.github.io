@@ -309,6 +309,20 @@ if ($LASTEXITCODE -ne 0) {
 $pingResult = ping $pingIp 2>&1
 Add-Content -Path $logFile -Value $pingResult
 ```
+## 冗長化
+
+なにかのタイミングでwg0サービスが無効化の状態で記憶されてしまうと、その後ずっと先のPingでのKeepAliveは失敗します。
+
+そこで先ほどのコードの先頭に次のようなコードを入れることで、再度有効化できます。
+
+```
+if (-not (Get-NetAdapter -Name "wg0" -ErrorAction SilentlyContinue)) {
+    # wg0 が存在しない場合の処理
+    "c:\Program Files\WireGuard\wireguard.exe" /installtunnelservice "c:\Program Files\WireGuard\Data\Configurations\wg0.conf.dpapi"
+}
+```
+ここで使うdpapiですか、これはData Protection API の略で、Windowsが提供しているデータ暗号化・復号の仕組みです。Wireguardの設定はその機能によって暗号化されて保存されています。
+このファイルのかわりに非暗号化状態のwg.confも指定できます。
 
 ## 端末管理
 
