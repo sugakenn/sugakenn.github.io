@@ -808,6 +808,7 @@ blockquote {
   color: #ada8a8;
 }
 
+/* オリジナル設定
 pre {
   padding: 1rem 2rem;
   overflow: auto;
@@ -815,6 +816,14 @@ pre {
   word-wrap: break-word;
   word-break: break-all;
 }
+*/
+
+pre {
+  padding: 1rem 2rem;
+  overflow-x: auto;
+  white-space: pre;
+}
+
 
 pre code {
   border: 0;
